@@ -1,4 +1,15 @@
 # modules/ecs_service/main.tf
+provider "aws" {
+  region = "us-east-2" # or your preferred region
+}
+
+module "networking" {
+  source              = "./modules/networking"
+  public_subnet_ids   = ["subnet-abc123", "subnet-def456"]
+  private_subnet_ids  = ["subnet-ghi789", "subnet-jkl012"]
+}
+
+# Add other modules after this, like ECS, RDS, etc.
 
 resource "aws_ecs_service" "strapi_blue" {
   name                               = "strapi-blue-service"
@@ -10,6 +21,7 @@ resource "aws_ecs_service" "strapi_blue" {
   deployment_controller {
     type = "CODE_DEPLOY"
   }
+  
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [var.service_sg_id]
@@ -33,11 +45,13 @@ resource "aws_ecs_service" "strapi_green" {
   deployment_controller {
     type = "CODE_DEPLOY"
   }
+  
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [var.service_sg_id]
     assign_public_ip = false
   }
+  
   load_balancer {
     target_group_arn = var.green_tg_arn
     container_name   = "strapi"
