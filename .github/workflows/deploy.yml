@@ -49,11 +49,10 @@ jobs:
 
       - name: Create CodeDeploy deployment
         run: |
-          aws deploy create-deployment-group `
-          --application-name strapi-codedeploy-app `
-          --deployment-group-name strapi-deploy-group `
-          --service-role-arn arn:aws:iam::607700977843:role/CodeDeployECSRole `
-          --deployment-config-name CodeDeployDefault.ECSAllAtOnce `
-          --deployment-style deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL `
-          --blue-green-deployment-configuration "{"terminateBlueInstancesOnDeploymentSuccess":{"action":"TERMINATE","terminationWaitTimeInMinutes":5}}" ` --load-balancer-info "{"targetGroupPairInfoList":[{"targetGroups":[{"name":"strapi-target-group-bhr"}],"prodTrafficRoute":{"listenerArns"":["arn:aws:elasticloadbalancing:us-east-2:607700977843:listener/app/app-alb-strapi-bhr/0b6fa7f3d06532e7/7ddf1a1917450e0b"]}}]}" ` --ecs-services serviceName=strapi-service,clusterName=strapi-cluster-bhr
-
+          aws ecs create-service \
+          --cluster strapi-cluster-hrk-v2 \
+          --service-name strapi-service \
+          --task-definition $TASK_DEF_ARN \
+          --desired-count 1 \
+          --launch-type FARGATE \
+          --network-configuration "awsvpcConfiguration={subnets=[subnet-00149dab4a12107f1,subnet-03e27b60efa8df9f0],securityGroups=[sg-019aebdd3e0e51560],assignPublicIp=ENABLED}"
