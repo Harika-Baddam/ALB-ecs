@@ -46,17 +46,13 @@ jobs:
             --cli-input-json file://taskdef.temp.json \
             --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-      - name: Update ECS service with new task definition
-        run: |    
-          aws ecs update-service \
-          --cluster strapi-cluster-hrk-v2 \
-          --service strapi-service \
-          --task-definition $TASK_DEF_ARN
-
 
       - name: Create CodeDeploy deployment
         run: |
-          aws deploy create-deployment \
-          --application-name StrapiCodeDeployApp \
-          --deployment-group-name StrapiDeploymentGroup \
-          --revision file://deployment.json
+          aws ecs create-service \
+          --cluster strapi-cluster-hrk-v2 \
+          --service-name strapi-service \
+          --task-definition $TASK_DEF_ARN \
+          --desired-count 1 \
+          --launch-type FARGATE \
+          --network-configuration "awsvpcConfiguration={subnets=[subnet-00149dab4a12107f1,subnet-03e27b60efa8df9f0],securityGroups=[sg-019aebdd3e0e51560],assignPublicIp=ENABLED}"
