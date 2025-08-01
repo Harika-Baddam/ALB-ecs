@@ -4,6 +4,7 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "strapi",
