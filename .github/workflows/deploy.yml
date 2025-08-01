@@ -1,4 +1,4 @@
-name: Deploy to ECS
+name: Deploy Strapi to ECS (Blue/Green)
 
 on:
   push:
@@ -7,24 +7,49 @@ on:
 
 jobs:
   deploy:
+    name: Deploy Strapi
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: us-east-2
+      ECS_CLUSTER: strapi-blue-green-cluster
+      ECS_SERVICE: strapi-service
+      TASK_FAMILY: strapi-task
+      CONTAINER_NAME: strapi
+      IMAGE_URI: baddamharika/strapi-app:latest
+      DEPLOYMENT_GROUP: StrapiDeploymentGroup
+      APPLICATION_NAME: StrapiCodeDeployApp
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Deploy with CodeDeploy
-      run: |
-        aws deploy create-deployment \
-        --application-name strapi-app \
-        --deployment-group-name strapi-dg \
-        --revision "revisionType=S3, s3Location={bucket=my-deployments, key=appspec.yaml, bundleType=YAML}" \
-        --description "Strapi Blue/Green Deploy"
-    
+      - name: Fill taskdef.json with new image
+        run: |
+          sed "s|baddamharika/strapi-app:latest|607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr|g" taskdef.json > taskdef.temp.json
+
+      - name: Register new ECS task definition
+        id: register
+        run: |
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://taskdef.temp.json \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+
+      - name: Create CodeDeploy deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name strapi-app \
+            --deployment-group-name $DEPLOYMENT_GROUP \
+            --deployment-config-name CodeDeployDefault.ECSCanary10Percent5Minutes \
+            --file-exists-behavior OVERWRITE \
+            --task-definition $TASK_DEF_ARN \
+            --github-location repository=https://github.com/Harika-Baddam/ALB-ecs.git,commitId=e2820221909ff7a9e2f96acbd22dcd37a770e82c \
+            --revision file://appspec.yaml
