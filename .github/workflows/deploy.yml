@@ -31,9 +31,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Fill taskdef.json with new image
+      - name: Substitute variables in taskdef
         run: |
-          sed "s|baddamharika/strapi-app:latest|607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr|g" taskdef.json > taskdef.temp.json
+         envsubst < taskdef.json > taskdef.temp.json
+      - name: Validate taskdef JSON
+        run: |
+          jq . taskdef.temp.json
+
 
       - name: Register new ECS task definition
         id: register
