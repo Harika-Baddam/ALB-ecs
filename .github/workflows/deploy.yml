@@ -50,10 +50,6 @@ jobs:
       - name: Create CodeDeploy deployment
         run: |
           aws deploy create-deployment \
-            --application-name strapi-app \
-            --deployment-group-name $DEPLOYMENT_GROUP \
-            --deployment-config-name CodeDeployDefault.ECSCanary10Percent5Minutes \
-            --file-exists-behavior OVERWRITE \
-            --task-definition $TASK_DEF_ARN \
-            --github-location repository=https://github.com/Harika-Baddam/ALB-ecs.git,commitId=e2820221909ff7a9e2f96acbd22dcd37a770e82c \
-            --revision file://appspec.yaml
+          --application-name StrapiCodeDeployApp \
+          --deployment-group-name StrapiDeploymentGroup \
+          --revision file://deployment.json
