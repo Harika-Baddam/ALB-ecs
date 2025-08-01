@@ -5,16 +5,16 @@
   "cpu": "512",
   "memory": "1024",
   "containerDefinitions": [
-    { 
-        "name": "strapi",
-      "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr/strapi-app:latest"
+    {
+      "name": "strapi",
+      "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr/strapi-app:latest",
+      "portMappings": [
         {
           "containerPort": 1337,
           "protocol": "tcp"
         }
       ],
-      "essential": true}
-     
+      "essential": true
     }
-
+  ]
 }
