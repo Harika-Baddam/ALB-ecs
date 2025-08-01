@@ -1,0 +1,6 @@
+{
+  "revisionType": "AppSpecContent",
+  "appSpecContent": {
+    "content": "version: 1\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: arn:aws:ecs:us-east-2:123456789012:task-definition/strapi-task:154\n        LoadBalancerInfo:\n          ContainerName: \"strapi\"\n          ContainerPort: 1337"
+  }
+}
